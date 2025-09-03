@@ -1,0 +1,46 @@
+package templates
+
+import "strconv"
+
+templ Sender (team int ){
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Sender</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  </head>
+  <body>
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
+      <h1 class="text-3xl font-bold text-gray-800 text-center mb-8">Message Sender - Team { strconv.Itoa(team) }</h1>
+      <form class="space-y-6">
+        <input type="hidden" name="team" value={ strconv.Itoa(team) }>
+        <div>
+          <label for="message" class="block text-sm font-medium text-gray-700 mb-2">
+            Enter your message (updates in real-time):
+          </label>
+          <textarea 
+            id="message" 
+            name="message" 
+            rows="4" 
+            hx-post="/send-message"
+            hx-trigger="input changed delay:500ms"
+            hx-include="[name='team']"
+            hx-target="#response"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none transition-all duration-200 placeholder-gray-400"
+            placeholder="Start typing your message... it will update in real-time!"
+          ></textarea>
+        </div>
+        <div class="text-sm text-gray-500 text-center">
+          💡 Your message updates automatically as you type!
+        </div>
+      </form>
+      <div id="response" class="mt-4"></div>
+    </div>
+  </div>
+  </body>
+  </html>
+}

@@ -1,0 +1,29 @@
+name: Fly Deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    name: Deploy app
+    runs-on: ubuntu-latest
+    concurrency: deploy-group
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      # Set secrets on Fly.io BEFORE deploying
+      - name: Set Fly Secrets
+        run: |
+          flyctl secrets set GEMINI_API_KEY_SECRET='${{ secrets.GEMINI_API_KEY }}' -a playground-dry-shadow-17
+          flyctl secrets set FIREBASE_API_KEY_SECRET='${{ secrets.FIREBASE_API_KEY }}' -a playground-dry-shadow-17
+          flyctl secrets set FIREBASE_SA_BASE64='${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}' -a playground-dry-shadow-17
+          
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      # Deploy step - NO build args for secrets needed anymore
+      - name: Deploy to Fly
+        run: flyctl deploy --remote-only -a playground-dry-shadow-17
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

@@ -1,0 +1,145 @@
+package templates
+
+import "github.com/MousaZa/cryptology-workshop/models"
+
+templ MessagesPartial(messages models.Messages) {
+    <!-- Team 1 - Top Left -->
+    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg shadow-lg p-6 flex flex-col">
+        <div class="bg-white bg-opacity-20 rounded-lg p-4 mb-4 backdrop-blur-sm">
+            <h2 class="text-2xl font-bold text-white text-center">Team 1</h2>
+        </div>
+        <div class="flex-1 bg-white bg-opacity-10 rounded-lg p-4 backdrop-blur-sm overflow-y-auto">
+            <div class="text-white">
+                if messages.Team1 != "" {
+                    <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                        <div class="font-medium whitespace-pre-wrap">{ messages.Team1 }</div>
+                    </div>
+                } else {
+                    <div class="text-center text-white opacity-60 italic">No messages yet...</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Team 2 - Top Right -->
+    <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-lg shadow-lg p-6 flex flex-col">
+        <div class="bg-white bg-opacity-20 rounded-lg p-4 mb-4 backdrop-blur-sm">
+            <h2 class="text-2xl font-bold text-white text-center">Team 2</h2>
+        </div>
+        <div class="flex-1 bg-white bg-opacity-10 rounded-lg p-4 backdrop-blur-sm overflow-y-auto">
+            <div class="text-white">
+                if messages.Team2 != "" {
+                    <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                        <div class="font-medium whitespace-pre-wrap">{ messages.Team2 }</div>
+                    </div>
+                } else {
+                    <div class="text-center text-white opacity-60 italic">No messages yet...</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Team 3 - Bottom Left -->
+    <div class="bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg shadow-lg p-6 flex flex-col">
+        <div class="bg-white bg-opacity-20 rounded-lg p-4 mb-4 backdrop-blur-sm">
+            <h2 class="text-2xl font-bold text-white text-center">Team 3</h2>
+        </div>
+        <div class="flex-1 bg-white bg-opacity-10 rounded-lg p-4 backdrop-blur-sm overflow-y-auto">
+            <div class="text-white">
+                if messages.Team3 != "" {
+                    <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                        <div class="font-medium whitespace-pre-wrap">{ messages.Team3 }</div>
+                    </div>
+                } else {
+                    <div class="text-center text-white opacity-60 italic">No messages yet...</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Team 4 - Bottom Right -->
+    <div class="bg-gradient-to-br from-red-500 to-red-700 rounded-lg shadow-lg p-6 flex flex-col">
+        <div class="bg-white bg-opacity-20 rounded-lg p-4 mb-4 backdrop-blur-sm">
+            <h2 class="text-2xl font-bold text-white text-center">Team 4</h2>
+        </div>
+        <div class="flex-1 bg-white bg-opacity-10 rounded-lg p-4 backdrop-blur-sm overflow-y-auto">
+            <div class="text-white">
+                if messages.Team4 != "" {
+                    <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                        <div class="font-medium whitespace-pre-wrap">{ messages.Team4 }</div>
+                    </div>
+                } else {
+                    <div class="text-center text-white opacity-60 italic">No messages yet...</div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+templ Reciever(messages models.Messages) {
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Team Messages - Receiver</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+    </head>
+    <body>
+        <div class="h-screen w-screen bg-gray-100 grid grid-cols-2 grid-rows-2 gap-2 p-2" 
+             hx-ext="ws" 
+             hx-ws="connect:/ws"
+             hx-trigger="ws:update from:body"
+             hx-get="/messages"
+             hx-target="#messages-container">
+            
+            <div id="messages-container" class="contents">
+                @MessagesPartial(messages)
+            </div>
+        </div>
+
+        <script>
+            // WebSocket connection for real-time updates
+            let ws;
+            
+            function connectWebSocket() {
+                ws = new WebSocket('ws://localhost:8000/ws');
+                
+                ws.onopen = function(event) {
+                    console.log('WebSocket connected');
+                };
+                
+                ws.onmessage = function(event) {
+                    if (event.data === 'update') {
+                        // Trigger HTMX to fetch updated messages
+                        htmx.trigger(document.body, 'ws:update');
+                    }
+                };
+                
+                ws.onclose = function(event) {
+                    console.log('WebSocket disconnected, attempting to reconnect...');
+                    setTimeout(connectWebSocket, 3000);
+                };
+                
+                ws.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                };
+            }
+
+            // Initialize WebSocket connection when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                connectWebSocket();
+                
+                // Get ID from URL (keeping existing functionality)
+                const urlParams = new URLSearchParams(window.location.search);
+                const id = urlParams.get('id');
+                if (id) {
+                    console.log('Receiver page loaded with ID:', id);
+                }
+            });
+        </script>
+    </body>
+    </html>
+}
